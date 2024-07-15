@@ -1,31 +1,59 @@
 import server from "./server";
 
-function Wallet({ address, setAddress, balance, setBalance }) {
-  async function onChange(evt) {
-    const address = evt.target.value;
-    setAddress(address);
-    if (address) {
-      const {
-        data: { balance },
-      } = await server.get(`balance/${address}`);
-      setBalance(balance);
-    } else {
-      setBalance(0);
-    }
-  }
+import { secp256k1 } from "ethereum-cryptography/secp256k1";
+import { keccak256 } from "ethereum-cryptography/keccak";
+import { toHex } from "ethereum-cryptography/utils";
 
-  return (
-    <div className="container wallet">
-      <h1>Your Wallet</h1>
+function Wallet({
+	address,
+	setAddress,
+	balance,
+	setBalance,
+	privateKey,
+	setPrivateKey,
+}) {
+	async function onChange(evt) {
+		const privateKey = evt.target.value;
+		setPrivateKey(privateKey);
 
-      <label>
-        Wallet Address
-        <input placeholder="Type an address, for example: 0x1" value={address} onChange={onChange}></input>
-      </label>
+		const publicKey = secp256k1.getPublicKey(privateKey);
+		const _address = toHex(getAddress(publicKey));
 
-      <div className="balance">Balance: {balance}</div>
-    </div>
-  );
+		setAddress(_address);
+
+		if (address) {
+			const {
+				data: { balance },
+			} = await server.get(`balance/${address}`);
+			setBalance(balance);
+		} else {
+			setBalance(0);
+		}
+	}
+
+	function getAddress(publicKey) {
+		const rest = publicKey.slice(1);
+		const hash = keccak256(rest);
+		return hash.slice(-20);
+	}
+
+	return (
+		<div className="container wallet">
+			<h1>Your Wallet</h1>
+
+			<label>
+				Private Key
+				<input
+					placeholder="Type in a privatekey"
+					value={privateKey}
+					onChange={onChange}
+				></input>
+			</label>
+			<div>Address: {address}</div>
+
+			<div className="balance">Balance: {balance}</div>
+		</div>
+	);
 }
 
 export default Wallet;
