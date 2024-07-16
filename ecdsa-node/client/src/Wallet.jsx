@@ -17,24 +17,18 @@ function Wallet({
 		setPrivateKey(privateKey);
 
 		const publicKey = secp256k1.getPublicKey(privateKey);
-		const _address = toHex(getAddress(publicKey));
+		const _address = toHex(publicKey);
 
 		setAddress(_address);
 
-		if (address) {
+		if (_address) {
 			const {
 				data: { balance },
-			} = await server.get(`balance/${address}`);
+			} = await server.get(`balance/${_address}`);
 			setBalance(balance);
 		} else {
 			setBalance(0);
 		}
-	}
-
-	function getAddress(publicKey) {
-		const rest = publicKey.slice(1);
-		const hash = keccak256(rest);
-		return hash.slice(-20);
 	}
 
 	return (

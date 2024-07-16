@@ -1,6 +1,5 @@
 import { useState } from "react";
 import server from "./server";
-import { toHex } from "ethereum-cryptography/utils";
 
 import { secp256k1 } from "ethereum-cryptography/secp256k1";
 import { utf8ToBytes } from "ethereum-cryptography/utils";
@@ -24,6 +23,10 @@ function Transfer({ address, setBalance, privateKey }) {
 		const hash = keccak256(bytes);
 
 		const signature = secp256k1.sign(hash, privateKey);
+
+		BigInt.prototype.toJSON = function () {
+			return this.toString();
+		};
 
 		try {
 			const {
